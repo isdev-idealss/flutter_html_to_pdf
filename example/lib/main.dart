@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_full_pdf_viewer/flutter_full_pdf_viewer.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -18,7 +18,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String generatedPdfFilePath;
+  String? generatedPdfFilePath;
 
   @override
   void initState() {
@@ -73,24 +73,28 @@ class _MyAppState extends State<MyApp> {
 
     final generatedPdfFile = await FlutterHtmlToPdf.convertFromHtmlContent(htmlContent, targetPath, targetFileName);
     generatedPdfFilePath = generatedPdfFile.path;
+    setState(() {
+      generatedPdfFilePath = generatedPdfFile.path;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: ElevatedButton(
-          child: Text("Open Generated PDF Preview"),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PDFViewerScaffold(appBar: AppBar(title: Text("Generated PDF Document")), path: generatedPdfFilePath)),
-            );
-          },
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PDF Preview'),
       ),
-    ));
+      body: generatedPdfFilePath != null
+          ? PDFView(
+              filePath: generatedPdfFilePath!,
+              enableSwipe: true,
+              swipeHorizontal: false,
+              autoSpacing: false,
+              pageFling: false,
+            )
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
+    );
   }
 }
